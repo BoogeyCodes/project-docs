@@ -14,12 +14,14 @@ when they want to know how I think.
 | --- | --- | --- | --- |
 | **PulseBoard** | Real-time fleet monitoring console with a live dashboard | ASP.NET Core 8, SignalR, React, TypeScript | [docs/pulseboard.md](docs/pulseboard.md) |
 | **ShortLink API** | Production-shaped URL shortener | ASP.NET Core 8, MediatR, EF Core | [docs/shortlink-api.md](docs/shortlink-api.md) |
+| **ratekit** | Zero-dependency keyed rate limiter (token-bucket + sliding-window) | TypeScript | [docs/ratekit.md](docs/ratekit.md) |
 | **logsift** | Zero-dependency log filtering and summarising CLI | Python 3.10+ | [docs/logsift.md](docs/logsift.md) |
 
 ## Repositories
 
 - [pulseboard](https://github.com/BoogeyCodes/pulseboard)
 - [shortlink-api](https://github.com/BoogeyCodes/shortlink-api)
+- [ratekit](https://github.com/BoogeyCodes/ratekit)
 - [logsift](https://github.com/BoogeyCodes/logsift)
 
 ## How these docs are organised
