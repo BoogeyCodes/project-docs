@@ -15,6 +15,8 @@ when they want to know how I think.
 | **PulseBoard** | Real-time fleet monitoring console with a live dashboard | ASP.NET Core 8, SignalR, React, TypeScript | [docs/pulseboard.md](docs/pulseboard.md) |
 | **ShortLink API** | Production-shaped URL shortener | ASP.NET Core 8, MediatR, EF Core | [docs/shortlink-api.md](docs/shortlink-api.md) |
 | **ratekit** | Zero-dependency keyed rate limiter (token-bucket + sliding-window) | TypeScript | [docs/ratekit.md](docs/ratekit.md) |
+| **flagpole** | Feature-flag service with deterministic percentage rollouts | Python, FastAPI | [docs/flagpole.md](docs/flagpole.md) |
+| **jsondiff** | CLI that structurally diffs two JSON files | C# / .NET 8 | [docs/jsondiff.md](docs/jsondiff.md) |
 | **logsift** | Zero-dependency log filtering and summarising CLI | Python 3.10+ | [docs/logsift.md](docs/logsift.md) |
 
 ## Repositories
@@ -22,6 +24,8 @@ when they want to know how I think.
 - [pulseboard](https://github.com/BoogeyCodes/pulseboard)
 - [shortlink-api](https://github.com/BoogeyCodes/shortlink-api)
 - [ratekit](https://github.com/BoogeyCodes/ratekit)
+- [flagpole](https://github.com/BoogeyCodes/flagpole)
+- [jsondiff](https://github.com/BoogeyCodes/jsondiff)
 - [logsift](https://github.com/BoogeyCodes/logsift)
 
 ## How these docs are organised
