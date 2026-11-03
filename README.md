@@ -14,6 +14,9 @@ when they want to know how I think.
 | --- | --- | --- | --- |
 | **PulseBoard** | Real-time fleet monitoring console with a live dashboard | ASP.NET Core 8, SignalR, React, TypeScript | [docs/pulseboard.md](docs/pulseboard.md) |
 | **ShortLink API** | Production-shaped URL shortener | ASP.NET Core 8, MediatR, EF Core | [docs/shortlink-api.md](docs/shortlink-api.md) |
+| **quickpoll** | Polls API: create polls, vote once per voter, live results | Ruby on Rails | [docs/quickpoll.md](docs/quickpoll.md) |
+| **recall** | Spaced-repetition flashcards with an SM-2 scheduler | Angular | [docs/recall.md](docs/recall.md) |
+| **contrastcheck** | WCAG colour-contrast checker | React | [docs/contrastcheck.md](docs/contrastcheck.md) |
 | **gridcalc** | Spreadsheet formula engine: parser, dependency graph, cycle detection | TypeScript | [docs/gridcalc.md](docs/gridcalc.md) |
 | **sketchkit** | Probabilistic data structures: Bloom, Count-Min, HyperLogLog | Python | [docs/sketchkit.md](docs/sketchkit.md) |
 | **ratekit** | Zero-dependency keyed rate limiter (token-bucket + sliding-window) | TypeScript | [docs/ratekit.md](docs/ratekit.md) |
@@ -25,6 +28,9 @@ when they want to know how I think.
 
 - [pulseboard](https://github.com/BoogeyCodes/pulseboard)
 - [shortlink-api](https://github.com/BoogeyCodes/shortlink-api)
+- [quickpoll](https://github.com/BoogeyCodes/quickpoll)
+- [recall](https://github.com/BoogeyCodes/recall)
+- [contrastcheck](https://github.com/BoogeyCodes/contrastcheck)
 - [gridcalc](https://github.com/BoogeyCodes/gridcalc)
 - [sketchkit](https://github.com/BoogeyCodes/sketchkit)
 - [ratekit](https://github.com/BoogeyCodes/ratekit)

@@ -1,0 +1,126 @@
+# quickpoll
+
+> A small polls API built with Ruby on Rails (API-only): create polls, vote once per voter, and read
+> live results with percentages.
+
+- **Repository:** https://github.com/BoogeyCodes/quickpoll
+- **Status:** Complete
+- **Primary stack:** Ruby on Rails 7.1 (API-only), SQLite, Minitest
+- **Last updated:** 2026-11-03
+
+## Overview
+
+quickpoll is a JSON API for polls. You create a poll with a question and a set of options, people cast
+one vote each (identified by an opaque token), and the API returns live results with vote counts and
+percentages. It is an API-only Rails app — no views — kept deliberately small so the Rails building
+blocks (associations, validations, a clean JSON error contract) are the subject.
+
+## Purpose and goals
+
+A polls API is a compact domain with a surprisingly rich set of rules, which makes it a good, honest
+demonstration of a Rails backend. The goal was to model it properly: real associations between polls,
+options and votes; validations that enforce the rules that matter ("one vote per voter per poll", "an
+option must belong to its poll", "no voting once a poll is closed"); a uniqueness guarantee backed at
+both the model and the database level; and a consistent JSON contract for success and error.
+
+## Tech stack
+
+| Area | Technology | Why |
+| --- | --- | --- |
+| Framework | Rails 7.1, API-only (`config.api_only`) | A JSON backend with no view or asset layer |
+| Persistence | Active Record + SQLite | The standard Rails model layer; zero setup |
+| Controllers | `ActionController::API` | Lean controllers with `rescue_from` for JSON errors |
+| Tests | Minitest (Rails default) | Model tests plus `ActionDispatch::IntegrationTest` request tests |
+| CI | GitHub Actions + `ruby/setup-ruby` | Migrates a fresh database and runs the suite |
+
+## Architecture
+
+```
+  routes.rb
+    POST /polls              PollsController#create
+    GET  /polls, /polls/:id  index / show
+    POST /polls/:id/close    close
+    POST /polls/:id/votes    VotesController#create
+        │
+        ▼
+  controllers (ActionController::API)
+    ApplicationController rescue_from RecordNotFound -> 404, RecordInvalid -> 422
+        │
+        ▼
+  models
+    Poll has_many :options, :votes ; #results computes counts + percentages
+    Option belongs_to :poll
+    Vote belongs_to :poll, :option ; unique (poll_id, voter_token)
+```
+
+## Key design decisions
+
+**`poll_id` on the vote, so "one vote per poll" is a scoped uniqueness rule.** A vote references both
+its option and its poll. Carrying `poll_id` directly lets the "one vote per voter per poll" rule be a
+simple `uniqueness: { scope: :poll_id }` validation, and the same constraint is added as a unique
+database index so a race cannot slip a duplicate past the validation.
+
+**Validations express the domain rules.** Beyond presence and uniqueness, custom validations enforce
+that a vote's option belongs to its poll and that a closed poll rejects new votes. Each rule is a
+named validation with a clear message, and each has a test.
+
+**A single JSON error contract.** `ApplicationController` rescues `RecordNotFound` into a `404` and
+`RecordInvalid` into a `422` with the model's `full_messages`. Controllers stay thin — they call
+`create!`/`find` and let the rescue handlers shape the error response — so success and failure are
+consistent across endpoints.
+
+**Results computed on the model.** `Poll#results` returns the serialised poll with each option's vote
+count and percentage, keeping that logic in the model rather than scattered across controllers or
+views.
+
+## Data and interface
+
+**Models.** `Poll(question, closed)`, `Option(poll_id, label)`, `Vote(poll_id, option_id,
+voter_token)` with a unique index on `(poll_id, voter_token)`.
+
+**Endpoints.**
+
+```
+GET    /polls              list, newest first
+POST   /polls              create { question, options: [..] }  (>= 2 options)
+GET    /polls/:id          poll with results
+POST   /polls/:id/close    close to further voting
+POST   /polls/:id/votes    cast a vote { option_id, voter_token }
+```
+
+A duplicate vote returns `422` with `{ "errors": ["Voter token has already voted in this poll"] }`.
+
+## Testing
+
+Twenty-two tests. Model tests cover the vote rules (required token, one vote per poll, the same token
+allowed in a different poll, an option from another poll rejected, a closed poll rejected) and the
+results calculation. Request tests drive the JSON API end to end with `ActionDispatch::IntegrationTest`:
+creating polls (and the `422`s for too few options or a blank question), listing newest-first, showing
+results, closing, casting votes, the duplicate and closed-poll errors, and the computed percentages.
+CI migrates a fresh SQLite database and runs the whole suite.
+
+## Running and deployment
+
+`bundle install`, `bin/rails db:prepare`, then `bin/rails server` or `bin/rails test`. As an API-only
+app it would deploy behind a Rails-capable host; `db/schema.rb` is generated by migration rather than
+committed, so CI migrates a clean database per run.
+
+## Challenges and lessons
+
+**Writing Rails by hand, validated by CI.** This app was authored file by file rather than generated,
+on a machine without Ruby, so the validation loop was GitHub Actions: push, let `ruby/setup-ruby`
+install gems and migrate a fresh database, run the suite, and fix anything that failed. Keeping the
+app api-only and the configuration minimal (requiring just the Active Record and Action Controller
+railties) kept the boilerplate small and the surface for mistakes low — and the suite passed on the
+first CI run.
+
+## Future work
+
+- Poll expiry (auto-close after a deadline).
+- Rate limiting and abuse protection on voting.
+- Live results over Action Cable.
+
+## Links
+
+- Repository: https://github.com/BoogeyCodes/quickpoll
+- Related docs: [shortlink-api.md](shortlink-api.md) and [flagpole.md](flagpole.md) (other small, well-validated APIs)
