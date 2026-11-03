@@ -14,6 +14,12 @@ when they want to know how I think.
 | --- | --- | --- | --- |
 | **PulseBoard** | Real-time fleet monitoring console with a live dashboard | ASP.NET Core 8, SignalR, React, TypeScript | [docs/pulseboard.md](docs/pulseboard.md) |
 | **ShortLink API** | Production-shaped URL shortener | ASP.NET Core 8, MediatR, EF Core | [docs/shortlink-api.md](docs/shortlink-api.md) |
+| **statemachine** | Declarative finite state machine with guards and callbacks | Python | [docs/statemachine.md](docs/statemachine.md) |
+| **expreval** | Safe arithmetic expression evaluator (shunting-yard), no `eval` | Python | [docs/expreval.md](docs/expreval.md) |
+| **globlite** | Glob matcher (`*`, `**`, `?`, classes, braces) compiled to RegExp | TypeScript | [docs/globlite.md](docs/globlite.md) |
+| **tinycsv** | RFC 4180 CSV parser and stringifier | TypeScript | [docs/tinycsv.md](docs/tinycsv.md) |
+| **Outcome** | Result and Option functional types | C# / .NET 8 | [docs/outcome.md](docs/outcome.md) |
+| **tabulate** | Render CSV/TSV as aligned ASCII or Markdown tables | C# / .NET 8 | [docs/tabulate.md](docs/tabulate.md) |
 | **cronparse** | Parse cron expressions, compute next runs, describe in English | Python | [docs/cronparse.md](docs/cronparse.md) |
 | **fuzzykit** | String similarity and fuzzy search (Levenshtein, Jaro-Winkler, Dice) | TypeScript | [docs/fuzzykit.md](docs/fuzzykit.md) |
 | **bytefmt** | `DataSize` value type: parse and format human byte sizes | C# / .NET 8 | [docs/bytefmt.md](docs/bytefmt.md) |
@@ -31,6 +37,12 @@ when they want to know how I think.
 
 - [pulseboard](https://github.com/BoogeyCodes/pulseboard)
 - [shortlink-api](https://github.com/BoogeyCodes/shortlink-api)
+- [statemachine](https://github.com/BoogeyCodes/statemachine)
+- [expreval](https://github.com/BoogeyCodes/expreval)
+- [globlite](https://github.com/BoogeyCodes/globlite)
+- [tinycsv](https://github.com/BoogeyCodes/tinycsv)
+- [outcome](https://github.com/BoogeyCodes/outcome)
+- [tabulate](https://github.com/BoogeyCodes/tabulate)
 - [cronparse](https://github.com/BoogeyCodes/cronparse)
 - [fuzzykit](https://github.com/BoogeyCodes/fuzzykit)
 - [bytefmt](https://github.com/BoogeyCodes/bytefmt)
