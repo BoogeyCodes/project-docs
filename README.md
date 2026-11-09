@@ -12,6 +12,7 @@ when they want to know how I think.
 
 | Project | One line | Primary stack | Doc |
 | --- | --- | --- | --- |
+| **TaskForge** | Team project & issue-tracker API with real-time board updates | C# / ASP.NET Core 8, EF Core, SignalR | [docs/taskforge.md](docs/taskforge.md) |
 | **AgentScore** | Web app to rate, rank and export reviews of AI coding-agent runs | React, TypeScript | [docs/agentscore.md](docs/agentscore.md) |
 | **agentrubric** | Score and rank agent runs against a 10-dimension rubric | Python | [docs/agentrubric.md](docs/agentrubric.md) |
 | **runtrace** | Normalise agent run transcripts into one schema with metrics | TypeScript | [docs/runtrace.md](docs/runtrace.md) |
@@ -42,6 +43,7 @@ when they want to know how I think.
 
 ## Repositories
 
+- [taskforge](https://github.com/BoogeyCodes/taskforge)
 - [agentscore](https://github.com/BoogeyCodes/agentscore)
 - [agentrubric](https://github.com/BoogeyCodes/agentrubric)
 - [runtrace](https://github.com/BoogeyCodes/runtrace)
