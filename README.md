@@ -12,6 +12,12 @@ when they want to know how I think.
 
 | Project | One line | Primary stack | Doc |
 | --- | --- | --- | --- |
+| **AgentScore** | Web app to rate, rank and export reviews of AI coding-agent runs | React, TypeScript | [docs/agentscore.md](docs/agentscore.md) |
+| **agentrubric** | Score and rank agent runs against a 10-dimension rubric | Python | [docs/agentrubric.md](docs/agentrubric.md) |
+| **runtrace** | Normalise agent run transcripts into one schema with metrics | TypeScript | [docs/runtrace.md](docs/runtrace.md) |
+| **patchkit** | Parse, summarise and apply the unified diffs agents produce | Python | [docs/patchkit.md](docs/patchkit.md) |
+| **sandrun** | Run an agent's work against tests in a sandbox (local/Docker) | Python | [docs/sandrun.md](docs/sandrun.md) |
+| **difflens** | Side-by-side multi-run diff views | TypeScript | [docs/difflens.md](docs/difflens.md) |
 | **Trackpense** | Personal finance tracker: transactions, budgets, live dashboard | C# / Blazor Server, EF Core | [docs/trackpense.md](docs/trackpense.md) |
 | **PulseBoard** | Real-time fleet monitoring console with a live dashboard | ASP.NET Core 8, SignalR, React, TypeScript | [docs/pulseboard.md](docs/pulseboard.md) |
 | **ShortLink API** | Production-shaped URL shortener | ASP.NET Core 8, MediatR, EF Core | [docs/shortlink-api.md](docs/shortlink-api.md) |
@@ -36,6 +42,12 @@ when they want to know how I think.
 
 ## Repositories
 
+- [agentscore](https://github.com/BoogeyCodes/agentscore)
+- [agentrubric](https://github.com/BoogeyCodes/agentrubric)
+- [runtrace](https://github.com/BoogeyCodes/runtrace)
+- [patchkit](https://github.com/BoogeyCodes/patchkit)
+- [sandrun](https://github.com/BoogeyCodes/sandrun)
+- [difflens](https://github.com/BoogeyCodes/difflens)
 - [trackpense](https://github.com/BoogeyCodes/trackpense)
 - [pulseboard](https://github.com/BoogeyCodes/pulseboard)
 - [shortlink-api](https://github.com/BoogeyCodes/shortlink-api)
