@@ -12,6 +12,7 @@ when they want to know how I think.
 
 | Project | One line | Primary stack | Doc |
 | --- | --- | --- | --- |
+| **FairShare** | Shared-expense tracker: groups, flexible splits, balances and minimal settle-up | Python, FastAPI, SQLAlchemy, HTMX | [docs/fairshare.md](docs/fairshare.md) |
 | **TaskForge** | Team project & issue-tracker API with real-time board updates | C# / ASP.NET Core 8, EF Core, SignalR | [docs/taskforge.md](docs/taskforge.md) |
 | **AgentScore** | Web app to rate, rank and export reviews of AI coding-agent runs | React, TypeScript | [docs/agentscore.md](docs/agentscore.md) |
 | **agentrubric** | Score and rank agent runs against a 10-dimension rubric | Python | [docs/agentrubric.md](docs/agentrubric.md) |
@@ -43,6 +44,7 @@ when they want to know how I think.
 
 ## Repositories
 
+- [fairshare](https://github.com/BoogeyCodes/fairshare)
 - [taskforge](https://github.com/BoogeyCodes/taskforge)
 - [agentscore](https://github.com/BoogeyCodes/agentscore)
 - [agentrubric](https://github.com/BoogeyCodes/agentrubric)
