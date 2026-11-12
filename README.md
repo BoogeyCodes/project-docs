@@ -12,6 +12,7 @@ when they want to know how I think.
 
 | Project | One line | Primary stack | Doc |
 | --- | --- | --- | --- |
+| **Gambit** | A playable chess engine: perft-verified move generation, alpha-beta search, browser board | TypeScript, Vite | [docs/gambit.md](docs/gambit.md) |
 | **Upcheck** | Self-hosted uptime monitor: scheduled checks, incidents, uptime stats, status page | C# / ASP.NET Core 8, EF Core | [docs/upcheck.md](docs/upcheck.md) |
 | **FairShare** | Shared-expense tracker: groups, flexible splits, balances and minimal settle-up | Python, FastAPI, SQLAlchemy, HTMX | [docs/fairshare.md](docs/fairshare.md) |
 | **TaskForge** | Team project & issue-tracker API with real-time board updates | C# / ASP.NET Core 8, EF Core, SignalR | [docs/taskforge.md](docs/taskforge.md) |
@@ -45,6 +46,7 @@ when they want to know how I think.
 
 ## Repositories
 
+- [gambit](https://github.com/BoogeyCodes/gambit)
 - [upcheck](https://github.com/BoogeyCodes/upcheck)
 - [fairshare](https://github.com/BoogeyCodes/fairshare)
 - [taskforge](https://github.com/BoogeyCodes/taskforge)
