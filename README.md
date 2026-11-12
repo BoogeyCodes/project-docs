@@ -17,10 +17,10 @@ when they want to know how I think.
 | **FairShare** | Shared-expense tracker: groups, flexible splits, balances and minimal settle-up | Python, FastAPI, SQLAlchemy, HTMX | [docs/fairshare.md](docs/fairshare.md) |
 | **TaskForge** | Team project & issue-tracker API with real-time board updates | C# / ASP.NET Core 8, EF Core, SignalR | [docs/taskforge.md](docs/taskforge.md) |
 | **AgentScore** | Web app to rate, rank and export reviews of AI coding-agent runs | React, TypeScript | [docs/agentscore.md](docs/agentscore.md) |
-| **agentrubric** | Score and rank agent runs against a 10-dimension rubric | Python | [docs/agentrubric.md](docs/agentrubric.md) |
+| **agentrubric** | Agent-evaluation platform: score/rank runs, a dashboard, REST API and a cross-evaluation leaderboard | Python, FastAPI | [docs/agentrubric.md](docs/agentrubric.md) |
 | **runtrace** | Normalise agent run transcripts into one schema with metrics | TypeScript | [docs/runtrace.md](docs/runtrace.md) |
 | **patchkit** | Parse, summarise and apply the unified diffs agents produce | Python | [docs/patchkit.md](docs/patchkit.md) |
-| **sandrun** | Run an agent's work against tests in a sandbox (local/Docker) | Python | [docs/sandrun.md](docs/sandrun.md) |
+| **sandrun** | Sandbox-execution service: run agent work against tests (local/Docker), a dashboard, REST API and pass-rate tracking | Python, FastAPI | [docs/sandrun.md](docs/sandrun.md) |
 | **difflens** | Side-by-side multi-run diff views | TypeScript | [docs/difflens.md](docs/difflens.md) |
 | **Trackpense** | Personal finance tracker: transactions, budgets, live dashboard | C# / Blazor Server, EF Core | [docs/trackpense.md](docs/trackpense.md) |
 | **PulseBoard** | Real-time fleet monitoring console with a live dashboard | ASP.NET Core 8, SignalR, React, TypeScript | [docs/pulseboard.md](docs/pulseboard.md) |

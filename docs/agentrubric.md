@@ -4,15 +4,17 @@
 
 - **Repository:** https://github.com/BoogeyCodes/agentrubric
 - **Status:** Complete
-- **Primary stack:** Python 3.10+ (standard library only)
-- **Last updated:** 2026-11-08
+- **Primary stack:** Python 3.10+ — zero-dependency core; FastAPI + Jinja2 web layer (optional extra)
+- **Last updated:** 2026-11-12
 
 ## Overview
 
-agentrubric is the scoring engine of an AI-agent evaluation workflow. Several agents are given the
-same task; you rate each run on ten quality dimensions, and agentrubric computes a weighted overall
-score (1–5), ranks the runs, and produces the written deliverable — a Markdown or JSON report with the
-score matrix, the ranking and each run's rationale. It is a CLI and a library with no dependencies.
+agentrubric is a platform for evaluating AI coding agents. Several agents are given the same task; you
+rate each run on ten quality dimensions, and agentrubric computes a weighted overall score (1–5), ranks
+the runs, produces the written report — and keeps a running **leaderboard** of how every agent does
+across all of your evaluations. It ships as three things in one package: a **web dashboard**, a **REST
+API**, and a **CLI + library**. The scoring engine has no dependencies; the web layer is an optional
+extra (`pip install agentrubric[web]`).
 
 ## Purpose and goals
 
@@ -36,13 +38,33 @@ every dimension, with integers in 1–5, and agent names must be unique — rais
 rather than producing a misleading score.
 
 **The report is the deliverable.** `to_markdown` renders the winner line, the dimension-by-agent
-matrix, the overall/rank rows and the rationales; `to_json` gives the same as structured data.
+matrix, the overall/rank rows and the rationales; `to_json` and `to_csv` give the same as structured
+data.
+
+## From a library to a platform
+
+The scoring engine answers "which run won this one task?" The platform answers the question a reviewer
+actually has: "which agent is better *over many tasks*?"
+
+**A dependency-free SQLite store.** `EvaluationStore` persists each scored evaluation (using stdlib
+`sqlite3`, so the core stays zero-dependency) and aggregates every agent across all of them into a
+leaderboard — evaluations, wins, win-rate, average, best/worst. The rubric is serialised alongside each
+evaluation, so a stored report still renders if the default rubric later changes.
+
+**A clean core/web boundary.** The web layer (`agentrubric.service.create_app`, FastAPI + Jinja2) is an
+optional extra; importing the scoring engine never pulls in a web framework. The dashboard offers a
+submit form, per-evaluation report pages with Markdown/JSON/CSV export, and the leaderboard; the REST
+API (`/api/evaluations`, `/api/leaderboard`, `/api/rubric`, `/healthz`) exposes the same for a harness.
+
+**Thread-safety for the server.** The store shares one SQLite connection across FastAPI's threadpool
+behind a lock (`check_same_thread=False`), and the app uses the modern lifespan API to open and close it.
 
 ## Testing
 
-Fifteen tests over the rubric (weights, duplicate/zero-weight guards), scoring (weighted overall,
-ranking, ties), validation (missing/unknown/out-of-range scores, duplicate agents) and the
-Markdown/JSON reports and CLI. CI runs on Python 3.10–3.13.
+Thirty-four tests: the rubric (weights, duplicate/zero-weight guards), scoring (weighted overall,
+ranking, ties), validation (missing/unknown/out-of-range scores, duplicate agents), the
+Markdown/JSON/CSV reports and CLI, the SQLite store and leaderboard aggregation, and every web route
+(dashboard, exports, REST API, submit/delete flows). CI runs on Python 3.10–3.13.
 
 ## Links
 
