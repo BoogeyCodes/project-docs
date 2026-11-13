@@ -18,7 +18,7 @@ when they want to know how I think.
 | **TaskForge** | Team project & issue-tracker API with real-time board updates | C# / ASP.NET Core 8, EF Core, SignalR | [docs/taskforge.md](docs/taskforge.md) |
 | **AgentScore** | Web app to rate, rank and export reviews of AI coding-agent runs | React, TypeScript | [docs/agentscore.md](docs/agentscore.md) |
 | **agentrubric** | Agent-evaluation platform: score/rank runs, a dashboard, REST API and a cross-evaluation leaderboard | Python, FastAPI | [docs/agentrubric.md](docs/agentrubric.md) |
-| **runtrace** | Normalise agent run transcripts into one schema with metrics | TypeScript | [docs/runtrace.md](docs/runtrace.md) |
+| **runtrace** | Normalise agent run transcripts into one schema + a browser **run-comparison dashboard** (metrics, bars, shared files) | TypeScript, Vite | [docs/runtrace.md](docs/runtrace.md) |
 | **patchkit** | Parse, summarise and apply the unified diffs agents produce | Python | [docs/patchkit.md](docs/patchkit.md) |
 | **sandrun** | Sandbox-execution service: run agent work against tests (local/Docker), a dashboard, REST API and pass-rate tracking | Python, FastAPI | [docs/sandrun.md](docs/sandrun.md) |
 | **difflens** | Side-by-side multi-run diff views | TypeScript | [docs/difflens.md](docs/difflens.md) |
@@ -33,7 +33,7 @@ when they want to know how I think.
 | **tabulate** | Render CSV/TSV as aligned ASCII or Markdown tables | C# / .NET 8 | [docs/tabulate.md](docs/tabulate.md) |
 | **cronparse** | Parse cron expressions, compute next runs, describe in English | Python | [docs/cronparse.md](docs/cronparse.md) |
 | **fuzzykit** | String similarity and fuzzy search (Levenshtein, Jaro-Winkler, Dice) | TypeScript | [docs/fuzzykit.md](docs/fuzzykit.md) |
-| **bytefmt** | `DataSize` value type: parse and format human byte sizes | C# / .NET 8 | [docs/bytefmt.md](docs/bytefmt.md) |
+| **bytefmt** | `DataSize` value type + **DiskScope**, a disk-usage explorer (scan engine, dashboard, REST API) | C# / .NET 8, ASP.NET Core | [docs/bytefmt.md](docs/bytefmt.md) |
 | **quickpoll** | Polls API: create polls, vote once per voter, live results | Ruby on Rails | [docs/quickpoll.md](docs/quickpoll.md) |
 | **recall** | Spaced-repetition flashcards with an SM-2 scheduler | Angular | [docs/recall.md](docs/recall.md) |
 | **contrastcheck** | WCAG colour-contrast checker | React | [docs/contrastcheck.md](docs/contrastcheck.md) |
