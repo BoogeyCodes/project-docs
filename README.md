@@ -34,12 +34,12 @@ when they want to know how I think.
 | **cronparse** | Parse cron expressions, compute next runs, describe in English | Python | [docs/cronparse.md](docs/cronparse.md) |
 | **fuzzykit** | String similarity and fuzzy search (Levenshtein, Jaro-Winkler, Dice) | TypeScript | [docs/fuzzykit.md](docs/fuzzykit.md) |
 | **bytefmt** | `DataSize` value type + **DiskScope**, a disk-usage explorer (scan engine, dashboard, REST API) | C# / .NET 8, ASP.NET Core | [docs/bytefmt.md](docs/bytefmt.md) |
-| **quickpoll** | Polls API: create polls, vote once per voter, live results | Ruby on Rails | [docs/quickpoll.md](docs/quickpoll.md) |
+| **quickpoll** | Full live-polling **web app** (create, vote, share, live results, expiry) with a JSON API underneath | Ruby on Rails | [docs/quickpoll.md](docs/quickpoll.md) |
 | **recall** | Spaced-repetition flashcards with an SM-2 scheduler | Angular | [docs/recall.md](docs/recall.md) |
 | **contrastcheck** | WCAG colour-contrast checker | React | [docs/contrastcheck.md](docs/contrastcheck.md) |
 | **gridcalc** | Spreadsheet formula engine: parser, dependency graph, cycle detection | TypeScript | [docs/gridcalc.md](docs/gridcalc.md) |
 | **sketchkit** | Probabilistic data structures: Bloom, Count-Min, HyperLogLog | Python | [docs/sketchkit.md](docs/sketchkit.md) |
-| **ratekit** | Zero-dependency keyed rate limiter (token-bucket + sliding-window) | TypeScript | [docs/ratekit.md](docs/ratekit.md) |
+| **ratekit** | Keyed rate limiter (token-bucket + sliding-window) **and a rate-limiting reverse-proxy gateway** with a live dashboard, admin API and CLI | TypeScript | [docs/ratekit.md](docs/ratekit.md) |
 | **flagpole** | Feature-flag service with deterministic percentage rollouts | Python, FastAPI | [docs/flagpole.md](docs/flagpole.md) |
 | **jsondiff** | CLI that structurally diffs two JSON files | C# / .NET 8 | [docs/jsondiff.md](docs/jsondiff.md) |
 | **logsift** | Zero-dependency log filtering and summarising CLI | Python 3.10+ | [docs/logsift.md](docs/logsift.md) |

@@ -1,12 +1,12 @@
 # ratekit
 
-> Zero-dependency keyed rate limiting for TypeScript: token-bucket and sliding-window algorithms
-> behind one small interface.
+> Zero-dependency keyed rate limiting for TypeScript — token-bucket and sliding-window algorithms
+> behind one small interface, plus a rate-limiting reverse-proxy gateway built on top of them.
 
 - **Repository:** https://github.com/BoogeyCodes/ratekit
-- **Status:** Complete
-- **Primary stack:** TypeScript (standard library only), built with tsup, tested with Vitest
-- **Last updated:** 2026-11-02
+- **Status:** Complete (v0.2 — added the gateway)
+- **Primary stack:** TypeScript (standard library + Node built-ins only), built with tsup, tested with Vitest
+- **Last updated:** 2026-11-17
 
 ## Overview
 
@@ -19,6 +19,15 @@ definitions and has no runtime dependencies.
 
 It is deliberately small and framework-agnostic. There is no Redis, no Express coupling, no decorator
 magic — just the limiting logic, with the algorithm visible and fully tested.
+
+On top of the library sits the **Ratekit Gateway**: a standalone reverse proxy that puts those
+limiters in front of any HTTP upstream without touching its code. You name a few policies, map routes
+to them (by glob pattern and method), and choose how each route is keyed — by IP, an API-key header,
+a query parameter, or a shared global bucket. Allowed requests are streamed through to the upstream
+with the standard `RateLimit-*` headers; over-budget requests get a `429` and `Retry-After`. A
+built-in dashboard shows live traffic, per-policy allow/deny, the busiest denied keys, and the state
+of every tracked key with a one-click reset. The gateway is built on Node's `http` module alone, so
+the "zero runtime dependencies" promise holds for the product as well as the library.
 
 ## Purpose and goals
 
@@ -69,8 +78,24 @@ caller decides what to do with a denial.
 ```
 
 Both limiters share two pieces: the `LruStore` that bounds memory, and the `Clock` that makes them
-testable. Each limiter is a factory function returning a `Limiter` object (`check`, `reset`, `size`),
-so there is no class hierarchy to learn.
+testable. Each limiter is a factory function returning a `Limiter` object (`check`, `peek`, `reset`,
+`size`), so there is no class hierarchy to learn.
+
+The gateway (under `ratekit/gateway`) is layered so its decision logic stays free of HTTP:
+
+```
+  request ─▶ RateGate.evaluate(method, path, headers, query, ip)
+                 │  match route (glob + method) ─▶ pick policy's limiter ─▶ derive key ─▶ check()
+                 ▼
+            GateDecision { matched, policy, key, result }   + MetricsCollector.record(...)
+                 │
+   server.ts ────┼─ allowed  ─▶ proxy.ts streams to the upstream (+ RateLimit-* headers)
+                 ├─ denied   ─▶ 429 + Retry-After
+                 └─ /__ratekit ─▶ dashboard + JSON admin API (metrics, config, live keys, reset)
+```
+
+`RateGate` and `MetricsCollector` import no `node:*` modules, so the whole gating and metrics layer is
+unit-tested with a `ManualClock`; only the thin `server.ts`/`proxy.ts` edge touches `http`.
 
 ## Key design decisions
 
@@ -129,19 +154,26 @@ interface RateLimitResult {
 
 ## Testing
 
-Eighteen tests across the two limiters and the header helper, all driven by a `ManualClock`. They
-cover: bursting up to capacity then denial; continuous refill at the configured rate; the idle bucket
-never accruing beyond capacity; `retryAfterMs` being exactly sufficient; variable cost per check; key
-isolation; LRU eviction past `maxKeys`; `reset`; the sliding window having no boundary spike; and
-argument and option validation. CI runs the suite, a type-check and a build on Linux and Windows
-across Node 18, 20 and 22.
+Fifty-one tests. The library suite (across the two limiters and the header helper) is driven by a
+`ManualClock` and covers: bursting up to capacity then denial; continuous refill at the configured
+rate; the idle bucket never accruing beyond capacity; `retryAfterMs` being exactly sufficient;
+variable cost per check; key isolation; LRU eviction past `maxKeys`; `reset`; the sliding window
+having no boundary spike; and argument and option validation. The gateway suite adds unit tests for
+route matching, key extraction, config validation and metrics bucketing, plus an **integration suite
+that stands up a real gateway in front of an in-process upstream over HTTP** — asserting proxied
+responses carry `RateLimit-*` headers, that an exhausted key gets a `429` without reaching the
+upstream, pass-through of unmatched routes, the dashboard and admin endpoints, and a `502` when the
+upstream is down. CI runs the suite, a type-check and a build on Linux and Windows across Node 18, 20
+and 22.
 
 ## Running and deployment
 
-`npm install` then `npm test`, `npm run typecheck` and `npm run build`. The build produces
-`dist/index.js` (ESM), `dist/index.cjs` (CommonJS) and `dist/index.d.ts`, wired through the
-package's `exports` map so both `import` and `require` resolve correctly. It is a library, so there is
-no server to deploy; it would be consumed as a dependency (and is publishable to npm).
+`npm install` then `npm test`, `npm run typecheck` and `npm run build`. The build produces ESM, CJS
+and `.d.ts` for both the library (`.`) and the gateway (`./gateway`) entry points, wired through the
+package's `exports` map so both `import` and `require` resolve correctly. The library is consumed as a
+dependency (and is publishable to npm). The gateway additionally ships a `ratekit-gateway` binary —
+`npx ratekit-gateway --config gateway.config.json` (or `--upstream <url>` for a single catch-all
+rule) — and a Dockerfile that runs it against a mounted config, so it deploys as its own service.
 
 ## Challenges and lessons
 
@@ -157,10 +189,12 @@ the small amount of code.
 
 ## Future work
 
-- A Redis-backed store implementing the same `Limiter` interface, for limiting across instances.
+- A Redis-backed store implementing the same `Limiter` interface, so both the library and the gateway
+  can limit across instances.
 - A fixed-window counter variant for callers who want the cheapest possible option.
 - Ready-made middleware adapters for Express and Fastify in a separate entry point, to keep the core
   framework-free.
+- Gateway: hot-reloading the config file, and streaming the dashboard over SSE instead of polling.
 
 ## Links
 

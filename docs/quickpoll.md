@@ -1,19 +1,24 @@
 # quickpoll
 
-> A small polls API built with Ruby on Rails (API-only): create polls, vote once per voter, and read
-> live results with percentages.
+> A full Ruby on Rails polling app: create a poll, share the link, and watch votes land live — with a
+> clean JSON API underneath. One vote per person, kept honest by a signed cookie.
 
 - **Repository:** https://github.com/BoogeyCodes/quickpoll
-- **Status:** Complete
-- **Primary stack:** Ruby on Rails 7.1 (API-only), SQLite, Minitest
-- **Last updated:** 2026-11-03
+- **Status:** Complete (v0.2 — grew from an API into a full web app)
+- **Primary stack:** Ruby on Rails 7.1 (full-stack), SQLite, Minitest
+- **Last updated:** 2026-11-17
 
 ## Overview
 
-quickpoll is a JSON API for polls. You create a poll with a question and a set of options, people cast
-one vote each (identified by an opaque token), and the API returns live results with vote counts and
-percentages. It is an API-only Rails app — no views — kept deliberately small so the Rails building
-blocks (associations, validations, a clean JSON error contract) are the subject.
+QuickPoll is a live polling web application with a JSON API underneath. On the web you create a poll
+(a question, two or more options, and an optional voting deadline), share its link, vote, and watch
+the results update in place as votes arrive, with the leading option highlighted. A voter is
+identified by a signed, long-lived cookie, so there is no sign-up and nobody can vote twice. The same
+domain is exposed as a JSON API with a consistent error contract — and the two share one set of
+controllers and one `results` method, diverging only at the edge via `respond_to`.
+
+It began life as an API-only app; v0.2 flipped `config.api_only` off and added the web layer
+(server-rendered views, cookie identity, CSRF, live results) without disturbing the API or its tests.
 
 ## Purpose and goals
 
@@ -27,30 +32,33 @@ both the model and the database level; and a consistent JSON contract for succes
 
 | Area | Technology | Why |
 | --- | --- | --- |
-| Framework | Rails 7.1, API-only (`config.api_only`) | A JSON backend with no view or asset layer |
+| Framework | Rails 7.1, full-stack | Server-rendered web UI plus the JSON API, one app |
+| Views | Action View (ERB), inline CSS | A dark-themed UI with no asset pipeline to configure |
+| Identity | Signed permanent cookie | One vote per browser, no sign-up; CSRF on for the web, skipped for JSON |
 | Persistence | Active Record + SQLite | The standard Rails model layer; zero setup |
-| Controllers | `ActionController::API` | Lean controllers with `rescue_from` for JSON errors |
-| Tests | Minitest (Rails default) | Model tests plus `ActionDispatch::IntegrationTest` request tests |
+| Controllers | `ActionController::Base` + `respond_to` | One controller set serving HTML and JSON |
+| Live results | JSON polling + progressive enhancement | Server renders correct results; a small script keeps them current |
+| Tests | Minitest (Rails default) | Model, request (API) and integration (web) tests |
 | CI | GitHub Actions + `ruby/setup-ruby` | Migrates a fresh database and runs the suite |
 
 ## Architecture
 
 ```
-  routes.rb
-    POST /polls              PollsController#create
-    GET  /polls, /polls/:id  index / show
-    POST /polls/:id/close    close
-    POST /polls/:id/votes    VotesController#create
+  routes.rb   root -> polls#index ; resources :polls (index/show/new/create, member close) + votes
         │
         ▼
-  controllers (ActionController::API)
-    ApplicationController rescue_from RecordNotFound -> 404, RecordInvalid -> 422
-        │
-        ▼
-  models
-    Poll has_many :options, :votes ; #results computes counts + percentages
-    Option belongs_to :poll
-    Vote belongs_to :poll, :option ; unique (poll_id, voter_token)
+  controllers (ActionController::Base)                 respond_to:
+    ApplicationController                                html -> redirect / render view
+      resolve_voter_token = params[:voter_token] || signed cookie id
+      rescue_from RecordNotFound -> 404 page / JSON      json -> render / JSON error
+      rescue_from RecordInvalid -> redirect+alert / 422
+        │                                   │
+        ▼                                   ▼
+  views (ERB, inline CSS)               models
+    index / new / show / _results        Poll has_many :options, :votes
+    live results poll the .json view       #results, #accepting_votes?, #expired?, #leading_option
+                                         Vote unique (poll_id, voter_token); option-belongs-to-poll;
+                                           poll-open (closed or past expires_at)
 ```
 
 ## Key design decisions
@@ -71,19 +79,37 @@ consistent across endpoints.
 
 **Results computed on the model.** `Poll#results` returns the serialised poll with each option's vote
 count and percentage, keeping that logic in the model rather than scattered across controllers or
-views.
+views. The same method feeds both the server-rendered results partial and the live-update JSON.
+
+**One controller set for two formats.** Rather than a separate API namespace, each action derives the
+voter identity once — an explicit `voter_token` if given (the API), otherwise a stable id from a
+signed permanent cookie (the web) — then `respond_to` branches HTML versus JSON only for the
+response. CSRF protection is enabled for the browser (forms carry a token) and skipped for JSON
+clients; the test environment disables forgery protection as Rails conventionally does.
+
+**Live results as progressive enhancement.** The poll page renders correct results server-side; a
+small inline script polls the `.json` view and updates counts, percentages and bar widths in place.
+With JavaScript off it still works — just without the live tick — so there is no hard dependency on a
+realtime transport.
+
+**Expiry as a model rule.** An optional `expires_at` gives a poll a deadline. `accepting_votes?`
+(`!closed? && !expired?`) is the single predicate the vote validation and the views consult, so
+"closed by hand" and "past its deadline" are handled uniformly.
 
 ## Data and interface
 
-**Models.** `Poll(question, closed)`, `Option(poll_id, label)`, `Vote(poll_id, option_id,
+**Models.** `Poll(question, closed, expires_at)`, `Option(poll_id, label)`, `Vote(poll_id, option_id,
 voter_token)` with a unique index on `(poll_id, voter_token)`.
 
-**Endpoints.**
+**Web pages.** `/` (recent polls), `/polls/new` (create form with a dynamic option builder and a
+deadline choice), `/polls/:id` (vote form or live results + share link + close control).
+
+**Endpoints (JSON, via `Accept: application/json` or a `.json` suffix).**
 
 ```
 GET    /polls              list, newest first
-POST   /polls              create { question, options: [..] }  (>= 2 options)
-GET    /polls/:id          poll with results
+POST   /polls              create { question, options: [..], expires_at? }  (>= 2 options)
+GET    /polls/:id          poll with results (adds accepting_votes, expires_at)
 POST   /polls/:id/close    close to further voting
 POST   /polls/:id/votes    cast a vote { option_id, voter_token }
 ```
@@ -92,18 +118,25 @@ A duplicate vote returns `422` with `{ "errors": ["Voter token has already voted
 
 ## Testing
 
-Twenty-two tests. Model tests cover the vote rules (required token, one vote per poll, the same token
-allowed in a different poll, an option from another poll rejected, a closed poll rejected) and the
-results calculation. Request tests drive the JSON API end to end with `ActionDispatch::IntegrationTest`:
+Forty-one tests. Model tests cover the vote rules (required token, one vote per poll, the same token
+allowed in a different poll, an option from another poll rejected, closed and expired polls rejected),
+the expiry predicates, and the results calculation. Request tests drive the JSON API end to end:
 creating polls (and the `422`s for too few options or a blank question), listing newest-first, showing
 results, closing, casting votes, the duplicate and closed-poll errors, and the computed percentages.
-CI migrates a fresh SQLite database and runs the whole suite.
+Integration tests drive the **web** flow: the home and new-poll pages render, creating a poll from the
+form redirects and drops blank options, a browser session votes once (cookie-keyed) and then sees
+results instead of the form, a second vote from the same session is refused, closing hides the form,
+and an unknown poll renders the 404 page. CI migrates a fresh SQLite database and runs the whole
+suite.
 
 ## Running and deployment
 
-`bundle install`, `bin/rails db:prepare`, then `bin/rails server` or `bin/rails test`. As an API-only
-app it would deploy behind a Rails-capable host; `db/schema.rb` is generated by migration rather than
-committed, so CI migrates a clean database per run.
+`bundle install`, `bin/rails db:prepare`, then `bin/rails server` (the web app on
+`http://localhost:3000`) or `bin/rails test`. A Dockerfile builds a production image that migrates on
+boot and serves with Puma; provide `SECRET_KEY_BASE` (it signs the voter cookie and session) and
+mount a volume at `/app/storage` to persist votes. On Windows the bundled `tzinfo-data` gem supplies
+the timezone database. `db/schema.rb` is generated by migration rather than committed, so CI migrates
+a clean database per run.
 
 ## Challenges and lessons
 
@@ -116,9 +149,9 @@ first CI run.
 
 ## Future work
 
-- Poll expiry (auto-close after a deadline).
-- Rate limiting and abuse protection on voting.
-- Live results over Action Cable.
+- Live results over Action Cable / Turbo Streams, replacing the JSON poll with a push.
+- Rate limiting and abuse protection on voting (a natural fit for [ratekit](ratekit.md)).
+- Richer poll management: an owner link to edit or reopen, and per-poll result exports.
 
 ## Links
 
