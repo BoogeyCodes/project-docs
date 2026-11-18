@@ -1,19 +1,26 @@
 # statemachine
 
-> A small, dependency-free declarative finite state machine for Python: states, transitions, guards
-> and callbacks.
+> A dependency-free declarative finite state machine for Python — plus Flowforge, a workflow engine
+> and dashboard built on it.
 
 - **Repository:** https://github.com/BoogeyCodes/statemachine
-- **Status:** Complete
-- **Primary stack:** Python 3.10+ (standard library only)
-- **Last updated:** 2026-11-03
+- **Status:** Complete (v0.2 — added the Flowforge workflow engine)
+- **Primary stack:** Python 3.10+ (core: standard library only); FastAPI + SQLite for the `[web]` extra
+- **Last updated:** 2026-11-18
 
 ## Overview
 
 statemachine models a workflow as a set of states and the transitions between them. You declare the
 transitions, then fire events with `trigger`; the machine moves state, running guards that can block a
 move and callbacks that run on it, and refusing any move that is not allowed. It is a few lines to
-learn and has no dependencies.
+learn and the core has no dependencies.
+
+On top of it sits **Flowforge**, a workflow engine and dashboard. Where the library runs one machine
+in memory, Flowforge treats workflows as *data*: a workflow is defined as JSON (states and
+transitions, with a `requires` guard naming the data a move needs), stored, and instantiated. Each
+running instance has a durable current state and an append-only history of every transition, so the
+whole lifecycle is auditable. A dependency-free SVG renderer draws the machine with the current state
+highlighted and the path taken marked, and a FastAPI app exposes it all as a dashboard and a REST API.
 
 ## Purpose and goals
 
@@ -27,9 +34,31 @@ one declarative place, and to make invalid moves an error rather than a silent b
 | Area | Technology | Why |
 | --- | --- | --- |
 | Language | Python 3.10+ | Dataclasses and callables keep it terse |
-| Dependencies | None | A small, self-contained library |
-| Tests | pytest | Transitions, guards, callbacks, event data |
-| CI | GitHub Actions matrix | Python 3.10–3.13 |
+| Core dependencies | None | A small, self-contained library |
+| Persistence | `sqlite3` (standard library) | Thread-safe store for workflows, instances and history |
+| Diagram | Hand-written SVG | A layered layout with no Graphviz/Matplotlib dependency |
+| Web (`[web]` extra) | FastAPI + Uvicorn + Jinja2 | Dashboard and REST API over the engine |
+| Tests | pytest | Machine, definitions, diagram, store, engine, and the service via `TestClient` |
+| CI | GitHub Actions matrix | ruff + pytest on Python 3.10–3.13 |
+
+## Architecture
+
+```
+  WorkflowDefinition (JSON: states + transitions + requires guards)
+        │ build_machine()                      diagram.render_svg()
+        ▼                                            │
+  StateMachine (the core library) ◀── replay at stored state   ▼ SVG (current + visited)
+        ▲                                         WorkflowEngine
+        │ fire()                                    define / start / fire / history
+  WorkflowStore (SQLite: workflows, instances, transition history)
+        ▲
+        │
+  FastAPI service (dashboard + REST API)  ──  statemachine serve / statemachine diagram
+```
+
+The engine is stateless: firing an event rebuilds the machine at the instance's stored state, applies
+the transition, and persists the new state and a history row — so durability and the audit trail come
+from the store, not from keeping a live object around.
 
 ## Key design decisions
 
@@ -47,8 +76,13 @@ and side effects have the context they need.
 
 ## Testing
 
-Eight tests covering basic transitions, invalid-move handling and state preservation, guards,
-callback ordering, event data, and wildcard and multi-source transitions. CI runs on Python 3.10–3.13.
+Forty-two tests. The core: basic transitions, invalid-move handling and state preservation, guards,
+callback ordering, event data, wildcard and multi-source transitions. Flowforge: the declarative
+definition layer and its validation; the SVG renderer (states, triggers, current-state highlight,
+back-edges and self-loops); the SQLite store (CRUD, ordered history, stats); the engine (start, fire,
+`requires` guards, history, invalid moves); and the FastAPI service via `TestClient` (creating
+workflows, starting instances, firing actions with required fields, the JSON API, 404s). CI runs ruff
+and the suite on Python 3.10–3.13.
 
 ## Challenges and lessons
 
@@ -59,9 +93,9 @@ cases — kept the behaviour predictable.
 
 ## Future work
 
-- Nested/hierarchical states.
-- A Graphviz export of the diagram.
-- Async guards and callbacks.
+- Nested/hierarchical states, and timed/automatic transitions (deadlines).
+- Per-transition webhooks so a workflow can drive external systems.
+- A visual editor for building definitions in the browser.
 
 ## Links
 

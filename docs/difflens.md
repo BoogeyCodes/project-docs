@@ -1,17 +1,25 @@
 # difflens
 
-> Build side-by-side, multi-run diff views for comparing what several AI coding-agent runs changed.
+> A library for side-by-side, multi-run diff views of what several coding-agent runs changed — and
+> DiffLens, an interactive browser app built on it.
 
 - **Repository:** https://github.com/BoogeyCodes/difflens
-- **Status:** Complete
-- **Primary stack:** TypeScript (standard library only), tsup, Vitest
-- **Last updated:** 2026-11-08
+- **Status:** Complete (v0.2 — added the interactive app)
+- **Primary stack:** TypeScript (library: standard library only), tsup, Vitest; Vite 5 for the app
+- **Last updated:** 2026-11-18
 
 ## Overview
 
 difflens takes each agent's file changes (before/after contents), computes a line diff per file, lines
 them up in a column per agent, flags the files more than one agent touched, and can render the whole
-thing as a self-contained HTML page. Zero dependencies, ESM and CJS.
+thing as a self-contained HTML page. The library is zero-dependency, ESM and CJS.
+
+**DiffLens** is the interactive front end: a Vite + vanilla-TypeScript single-page app that imports the
+library and makes the comparison explorable. Paste an `AgentRun[]` (or load the bundled sample) and it
+renders one section per file with a column per agent — green inserts, red deletes, per-cell
+`+added/-removed`, explicit "not changed" cells — and a summary bar with totals, a file-path filter, an
+"only diverged" toggle (files changed by more than one agent), and a side-by-side/stacked switch. The
+divergence points — where the runs disagree — are badged, since those are what a reviewer looks for.
 
 ## Purpose and goals
 
@@ -32,11 +40,19 @@ runs diverge.
 per agent and highlighted add/remove lines; all content is HTML-escaped and there are no scripts or
 external assets.
 
+**A DOM-free view model for the app.** The interactive app keeps all presentation logic — summary
+totals, per-file row views, and the filter — in a `web/model.ts` module that takes a `Comparison` and
+returns plain data (`buildViewModel`, `summarize`, `toFileView`, `filterFiles`). It touches no DOM, so
+it is unit-tested like the library; `web/main.ts` is the thin layer that renders that model. Vite is
+pinned to **5** so the CI matrix can keep Node 18.
+
 ## Testing
 
-Thirteen tests across the LCS diff (equal/insert/delete, changed lines, empty inputs, stats), the
-comparison (file order, per-agent diff or null, overlap, duplicate-agent rejection) and the renderer
-(self-contained output, escaping). CI on Linux and Windows across Node 18/20/22.
+Twenty-three tests. The library: the LCS diff (equal/insert/delete, changed lines, empty inputs,
+stats), the comparison (file order, per-agent diff or null, overlap, duplicate-agent rejection) and the
+renderer (self-contained output, escaping). The app: the DOM-free view model (summary totals, file-row
+mapping, divergence flag, the path and "only diverged" filters). CI on Linux and Windows across Node
+18/20/22 runs the library typecheck, tests and build plus the app's `typecheck:web` and `build:web`.
 
 ## Links
 

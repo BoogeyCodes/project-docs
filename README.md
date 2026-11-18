@@ -21,11 +21,11 @@ when they want to know how I think.
 | **runtrace** | Normalise agent run transcripts into one schema + a browser **run-comparison dashboard** (metrics, bars, shared files) | TypeScript, Vite | [docs/runtrace.md](docs/runtrace.md) |
 | **patchkit** | Parse, summarise and apply the unified diffs agents produce | Python | [docs/patchkit.md](docs/patchkit.md) |
 | **sandrun** | Sandbox-execution service: run agent work against tests (local/Docker), a dashboard, REST API and pass-rate tracking | Python, FastAPI | [docs/sandrun.md](docs/sandrun.md) |
-| **difflens** | Side-by-side multi-run diff views | TypeScript | [docs/difflens.md](docs/difflens.md) |
+| **difflens** | Side-by-side multi-run diff library **and DiffLens**, an interactive browser app to explore where agent runs diverge | TypeScript, Vite | [docs/difflens.md](docs/difflens.md) |
 | **Trackpense** | Personal finance tracker: transactions, budgets, live dashboard | C# / Blazor Server, EF Core | [docs/trackpense.md](docs/trackpense.md) |
 | **PulseBoard** | Real-time fleet monitoring console with a live dashboard | ASP.NET Core 8, SignalR, React, TypeScript | [docs/pulseboard.md](docs/pulseboard.md) |
 | **ShortLink API** | Production-shaped URL shortener | ASP.NET Core 8, MediatR, EF Core | [docs/shortlink-api.md](docs/shortlink-api.md) |
-| **statemachine** | Declarative finite state machine with guards and callbacks | Python | [docs/statemachine.md](docs/statemachine.md) |
+| **statemachine** | Declarative finite state machine **and Flowforge**, a workflow engine + dashboard (JSON-defined workflows, durable instances, SVG diagrams, REST API) | Python, FastAPI | [docs/statemachine.md](docs/statemachine.md) |
 | **expreval** | Safe arithmetic expression evaluator (shunting-yard), no `eval` | Python | [docs/expreval.md](docs/expreval.md) |
 | **globlite** | Glob matcher (`*`, `**`, `?`, classes, braces) compiled to RegExp | TypeScript | [docs/globlite.md](docs/globlite.md) |
 | **tinycsv** | RFC 4180 CSV parser and stringifier | TypeScript | [docs/tinycsv.md](docs/tinycsv.md) |
