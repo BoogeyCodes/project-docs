@@ -32,7 +32,7 @@ when they want to know how I think.
 | **Outcome** | Result and Option functional types | C# / .NET 8 | [docs/outcome.md](docs/outcome.md) |
 | **tabulate** | Render CSV/TSV as aligned ASCII or Markdown tables | C# / .NET 8 | [docs/tabulate.md](docs/tabulate.md) |
 | **cronparse** | Parse cron expressions, compute next runs, describe in English | Python | [docs/cronparse.md](docs/cronparse.md) |
-| **fuzzykit** | String similarity and fuzzy search (Levenshtein, Jaro-Winkler, Dice) | TypeScript | [docs/fuzzykit.md](docs/fuzzykit.md) |
+| **fuzzykit** | String similarity + fuzzy search (Levenshtein, Jaro-Winkler, Dice) **and an interactive explorer** that ranks a dataset live as you type | TypeScript, Vite | [docs/fuzzykit.md](docs/fuzzykit.md) |
 | **bytefmt** | `DataSize` value type + **DiskScope**, a disk-usage explorer (scan engine, dashboard, REST API) | C# / .NET 8, ASP.NET Core | [docs/bytefmt.md](docs/bytefmt.md) |
 | **quickpoll** | Full live-polling **web app** (create, vote, share, live results, expiry) with a JSON API underneath | Ruby on Rails | [docs/quickpoll.md](docs/quickpoll.md) |
 | **recall** | Spaced-repetition flashcards with an SM-2 scheduler | Angular | [docs/recall.md](docs/recall.md) |
@@ -42,7 +42,7 @@ when they want to know how I think.
 | **ratekit** | Keyed rate limiter (token-bucket + sliding-window) **and a rate-limiting reverse-proxy gateway** with a live dashboard, admin API and CLI | TypeScript | [docs/ratekit.md](docs/ratekit.md) |
 | **flagpole** | Feature-flag service with deterministic percentage rollouts | Python, FastAPI | [docs/flagpole.md](docs/flagpole.md) |
 | **jsondiff** | CLI that structurally diffs two JSON files | C# / .NET 8 | [docs/jsondiff.md](docs/jsondiff.md) |
-| **logsift** | Zero-dependency log filtering and summarising CLI | Python 3.10+ | [docs/logsift.md](docs/logsift.md) |
+| **logsift** | Log filtering/summarising CLI **and a web console**: upload logs, get a dashboard (levels, error timeline, message patterns) and a filtered viewer | Python 3.10+, FastAPI | [docs/logsift.md](docs/logsift.md) |
 
 ## Repositories
 

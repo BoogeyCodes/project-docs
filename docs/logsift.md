@@ -1,23 +1,29 @@
 # logsift
 
-> A zero-dependency command-line tool that filters and summarises JSON or plain-text application logs.
+> Filter and summarise JSON or plain-text application logs — from the command line or a web console.
 
 - **Repository:** https://github.com/BoogeyCodes/logsift
-- **Status:** Complete
-- **Primary stack:** Python 3.10+ (standard library only)
-- **Last updated:** 2026-11-02
+- **Status:** Complete (v0.2 — added the web console)
+- **Primary stack:** Python 3.10+ (CLI: standard library only); FastAPI + SQLite for the `[web]` extra
+- **Last updated:** 2026-11-24
 
 ## Overview
 
 logsift reads log files — or standard input — understands both structured JSON-lines output and
-classic `timestamp LEVEL message` text, and lets you ask questions of them from the terminal. Two
-modes: `filter` prints the matching lines, and `stats` summarises them. It can answer "what errored in
-the last fifteen minutes?" or "which messages dominate this file?" without a `jq` incantation, and it
-streams, so multi-gigabyte files are fine.
+classic `timestamp LEVEL message` text, and lets you ask questions of them. Two CLI modes: `filter`
+prints the matching lines, and `stats` summarises them. It answers "what errored in the last fifteen
+minutes?" or "which messages dominate this file?" without a `jq` incantation, and it streams, so
+multi-gigabyte files are fine.
 
 It exists for the gap between a raw log file and a log platform. A lot of debugging starts with a
 `kubectl logs` dump or a `.log.gz` pulled off a server — files that never reached a search index.
-logsift is the small, dependency-free tool for exactly that moment.
+logsift is the small tool for exactly that moment.
+
+v0.2 adds a **web console** (`logsift serve`, the optional `[web]` extra) over the same engine: upload
+or paste logs and get a dashboard — the level breakdown, a timeline of volume with errors picked out
+in red, the message patterns behind the noise, and the top errors — plus a viewer that filters by
+level, text, structured field and time window, live. Every view has a JSON twin, so the console is
+also an API. The CLI itself stays dependency-free.
 
 ## Purpose and goals
 
@@ -35,11 +41,13 @@ read-only analysis tool for files and streams you already have.
 | Area | Technology | Why |
 | --- | --- | --- |
 | Language | Python 3.10+ | Ubiquitous on servers and developer machines |
-| Dependencies | None (standard library only) | Installs and runs anywhere Python does; nothing to audit |
+| CLI dependencies | None (standard library only) | Installs and runs anywhere Python does; nothing to audit |
 | CLI | `argparse` with subcommands | Familiar interface, built in |
+| Console (`[web]` extra) | FastAPI + Uvicorn + Jinja2 | A dashboard and JSON API over the same engine |
+| Persistence | `sqlite3` (standard library) | Uploaded datasets parsed once and stored |
 | Packaging | `pyproject.toml`, console entry point | `pip install` gives a `logsift` command |
 | Lint | ruff | Fast, strict, zero-config |
-| Testing | pytest | The suite that proves the parsers against real shapes |
+| Testing | pytest | Proves the parsers against real shapes; also the store and console |
 | CI | GitHub Actions matrix | Linux and Windows, Python 3.10 to 3.13 |
 
 ## Architecture
@@ -62,6 +70,12 @@ read-only analysis tool for files and streams you already have.
 
 Everything is a lazy generator from end to end, so memory stays flat regardless of file size. The
 `Record` dataclass is the one shape that flows through parsing, filtering and summarising.
+
+The console reuses that pipeline rather than reimplementing it. On upload, lines are parsed once and
+the `Record`s are stored structured in SQLite (`store.py`); each page view fetches a dataset's
+records, builds the same `FilterSpec` predicate from query parameters, filters, and runs the same
+`summarise` — so the web view-model is `web.py` turning a `Summary` into level bars, a bucketed
+timeline and template tables, with nothing in the analysis layer duplicated.
 
 ## Key design decisions
 
@@ -107,19 +121,22 @@ Files may be plain or `.gz`; with no files it reads stdin, so `kubectl logs ... 
 
 ## Testing
 
-Sixty-four tests. They cover the parsers against real line shapes from several logging ecosystems
+Seventy-seven tests. They cover the parsers against real line shapes from several logging ecosystems
 (Serilog compact keys, pino numeric levels and epoch-millisecond timestamps, Python logging, syslog,
 bracketed and colon-terminated level tokens, trailing key=value pairs), the filter predicates
 including durations and nested `--where` keys, the summary maths (level counts, message templating,
 time-bucket boundaries), and the CLI end to end against sample files in the repo — multiple files,
-gzip, stdin, output formats and exit codes. The matrix runs it on Linux and Windows across four Python
-versions.
+gzip, stdin, output formats and exit codes. The console adds tests for the SQLite store (parsed
+records round-tripping with their level, timestamp and fields intact) and the FastAPI app via
+`TestClient` (upload, the level/text/field filters narrowing the summary, the JSON API, and errors).
+The matrix runs it on Linux and Windows across four Python versions.
 
 ## Running and deployment
 
-`pip install git+https://github.com/BoogeyCodes/logsift.git` gives a `logsift` command. For
-development, `pip install -e ".[dev]"`, then `ruff check .` and `pytest`. There is no runtime
-deployment — it is a tool you install and run.
+`pip install git+https://github.com/BoogeyCodes/logsift.git` gives a `logsift` command. The console
+is `pip install "logsift[web]"` then `logsift serve`, or `docker run` the included image (datasets
+persist in a mounted `/data` volume). For development, `pip install -e ".[dev]"`, then `ruff check .`
+and `pytest`.
 
 ## Challenges and lessons
 
