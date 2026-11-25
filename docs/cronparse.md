@@ -1,18 +1,25 @@
 # cronparse
 
-> Parse cron expressions, compute the next run times, and describe them in plain English.
+> Parse, explain and explore cron expressions — in plain English, from the CLI or a web schedule
+> explorer.
 
 - **Repository:** https://github.com/BoogeyCodes/cronparse
-- **Status:** Complete
-- **Primary stack:** Python 3.10+ (standard library only)
-- **Last updated:** 2026-11-03
+- **Status:** Complete (v0.2 — added the web explorer)
+- **Primary stack:** Python 3.10+ (CLI: standard library only); FastAPI + SQLite for the `[web]` extra
+- **Last updated:** 2026-11-25
 
 ## Overview
 
-cronparse is a small Python library (and CLI) for working with cron expressions. Given a standard
-5-field expression, it tells you the exact set of times it matches, computes the upcoming run times
-from any starting point, and produces a plain-English description. It has no dependencies, and the
+cronparse is a Python library (and CLI) for working with cron expressions. Given a standard 5-field
+expression, it tells you the exact set of times it matches, computes the upcoming run times from any
+starting point, and produces a plain-English description. The library has no dependencies, and the
 parsing — the part that is easy to get subtly wrong — is the well-tested core.
+
+v0.2 adds a **web schedule explorer** (`cronparse serve`, the optional `[web]` extra): type an
+expression and see it explained — the description, a field-by-field breakdown, the next and previous
+runs with relative times, and a heatmap of runs per hour over the next week — plus a saved-jobs
+"crontab" (SQLite) with a combined "what runs next" timeline. Every view has a JSON twin, so the
+explorer is also an API, and the compute is shared with the pages.
 
 ## Purpose and goals
 
@@ -29,8 +36,10 @@ future work; the library is timezone-naive.
 | Area | Technology | Why |
 | --- | --- | --- |
 | Language | Python 3.10+ | Sets and `datetime` make the logic direct |
-| Dependencies | None | A small, self-contained utility |
-| Tests | pytest | Field parsing, matching, next-run and the CLI |
+| CLI dependencies | None | A small, self-contained utility |
+| Explorer (`[web]` extra) | FastAPI + Uvicorn + Jinja2 | A schedule explorer and JSON API over the parser |
+| Persistence | `sqlite3` (standard library) | Saved named jobs for the combined timeline |
+| Tests | pytest | Field parsing, matching, next-run, the CLI, and the explorer |
 | CI | GitHub Actions matrix | Python 3.10–3.13 |
 
 ## Architecture
@@ -50,6 +59,12 @@ future work; the library is timezone-naive.
         ▼
   cli.py   describe + list the next N runs
 ```
+
+The explorer reuses that engine rather than reimplementing it. `schedule.py` holds pure helpers over a
+`CronExpression` — the field breakdown, the upcoming-runs list with relative times, and a run-density
+heatmap built by scanning the next week minute by minute (bounded regardless of how sparse the
+schedule is, unlike repeatedly calling `next_run`). `web.py` turns those into HTML and the same shape
+of JSON, and a small SQLite `JobStore` keeps saved jobs so the explorer can show a merged timeline.
 
 ## Key design decisions
 
@@ -80,15 +95,18 @@ value sets rather than re-parsing the raw text.
 
 ## Testing
 
-Twenty-five tests: field parsing (wildcards, lists, ranges, steps, names, the Sunday `7` alias and
-rejected input), matching and `next_run` (the strictly-after rule, weekday schedules, the DOM/DOW OR
-semantics, named months, and the impossible-schedule guard), the descriptions, and the CLI. CI runs
-on Python 3.10 through 3.13.
+Forty tests: field parsing (wildcards, lists, ranges, steps, names, the Sunday `7` alias and rejected
+input), matching and `next_run` (the strictly-after rule, weekday schedules, the DOM/DOW OR semantics,
+named months, and the impossible-schedule guard), the descriptions, and the CLI. The explorer adds
+tests for the schedule helpers (field views, upcoming runs, relative times, and a heatmap that stays
+bounded even for a yearly schedule), the job store, and the FastAPI app via `TestClient` (explaining
+valid and invalid expressions, the JSON API, and saving/deleting jobs). CI runs on Python 3.10–3.13.
 
 ## Running and deployment
 
-`pip install -e ".[dev]"` then `pytest`, or install and run `cronparse "<expr>"`. It is a library and
-CLI; there is nothing to deploy.
+`pip install -e ".[dev]"` then `pytest`, or install and run `cronparse "<expr>"`. The explorer is
+`pip install "cronparse[web]"` then `cronparse serve`, or the included Docker image (saved jobs
+persist in a mounted `/data` volume).
 
 ## Challenges and lessons
 
@@ -100,7 +118,7 @@ on the 1st and on Mondays) made the rule explicit and kept the implementation ho
 
 - Seconds (6-field) and `@hourly` / `@daily` shorthands.
 - Timezone-aware scheduling.
-- A previous-run direction.
+- Comparing two expressions side by side in the explorer.
 
 ## Links
 

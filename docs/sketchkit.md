@@ -1,12 +1,12 @@
 # sketchkit
 
-> Dependency-free probabilistic data structures in Python: a Bloom filter, a Count-Min Sketch and a
-> HyperLogLog, with tests that check the probabilistic guarantees hold.
+> Dependency-free probabilistic data structures in Python (Bloom, Count-Min, HyperLogLog) — plus
+> Sketchkit Explorer, a web app that measures each one against exact ground truth.
 
 - **Repository:** https://github.com/BoogeyCodes/sketchkit
-- **Status:** Complete
-- **Primary stack:** Python 3.10+ (standard library only)
-- **Last updated:** 2026-11-03
+- **Status:** Complete (v0.2 — added the explorer app)
+- **Primary stack:** Python 3.10+ (library: standard library only); FastAPI for the `[web]` extra
+- **Last updated:** 2026-11-25
 
 ## Overview
 
@@ -15,6 +15,15 @@ stream of items using a fixed, small amount of memory, by allowing a bounded err
 answers "have I seen this?", a Count-Min Sketch answers "how many times?", and a HyperLogLog answers
 "how many distinct?". They are implemented from first principles in a form clear enough to read, and
 the test suite checks that the statistical guarantees actually hold on real data.
+
+v0.2 adds **Sketchkit Explorer** (`sketchkit serve`, the optional `[web]` extra), a FastAPI app that
+makes the accuracy/memory trade-off tangible. Each demo runs the real library class against *exact*
+ground truth computed server-side and shows the numbers side by side: the Bloom filter's measured
+false-positive rate versus its theoretical one (and zero false negatives), the Count-Min sketch's
+estimate versus the true frequency for the busiest items of a seeded Zipf stream (never an
+underestimate), and the HyperLogLog's estimated versus true distinct count — each with the memory it
+uses against an exact set or dict. Every demo has a JSON endpoint sharing one seeded compute function,
+so the page and the API agree and are reproducible.
 
 ## Purpose and goals
 
@@ -39,8 +48,9 @@ listed as future work.
 | --- | --- | --- |
 | Language | Python 3.10+ | Clear, and `int.bit_length` / `int.bit_count` make the bit work tidy |
 | Hashing | `hashlib.blake2b` | A fast, process-stable digest (unlike the salted built-in `hash`) |
-| Dependencies | None | Nothing to install or audit |
-| Tests | pytest | Including statistical guarantee checks |
+| Library dependencies | None | Nothing to install or audit |
+| Explorer (`[web]` extra) | FastAPI + Uvicorn + Jinja2 | Demos and a JSON API over the real structures |
+| Tests | pytest | Statistical guarantee checks, the demo compute, and the app |
 | CI | GitHub Actions matrix | Python 3.10–3.13 |
 
 ## Architecture
@@ -57,6 +67,12 @@ listed as future work.
 
 All three share one hashing module, so each item is hashed once and the structures stay consistent
 and reproducible.
+
+The explorer sits on top without touching the structures: `demos.py` holds pure, seeded compute
+functions that build a structure, run it against exact ground truth, and return a plain dict of
+numbers (estimate, truth, error, memory, saving); `web.py` renders those as HTML and the same shape of
+JSON. Because the compute is pure and seeded, it is unit-tested directly — the app's correctness is
+checked the same way the library's is.
 
 ## Key design decisions
 
@@ -106,14 +122,15 @@ Thirty tests, and the notable ones check the guarantees rather than just the plu
 - **HyperLogLog:** estimates for cardinalities from 100 to 100,000 land within a few standard errors
   of the truth, duplicates do not inflate the count, and higher precision is measurably more accurate.
 
-Measured on a large demo run: Bloom 0.99% false positives against a 1% target; Count-Min estimates a
-heavy hitter at 142,943 versus an actual 142,858; HyperLogLog counts 500,000 distinct items as
-495,697 (0.86% off) using 16 KB. CI runs the suite on Python 3.10 through 3.13.
+The explorer adds its own tests (47 in total): the seeded demo compute — Bloom gives no false
+negatives and a believable measured FP rate, Count-Min never underestimates the sampled items, and the
+HyperLogLog estimate lands within a few percent of the truth — and the FastAPI app via `TestClient`
+(each demo page and JSON endpoint). CI runs the suite on Python 3.10 through 3.13.
 
 ## Running and deployment
 
-`pip install -e ".[dev]"` then `pytest`. It is a library, imported and used; there is nothing to
-deploy.
+`pip install -e ".[dev]"` then `pytest` for the library. The explorer is `pip install
+"sketchkit[web]"` then `sketchkit serve`, or the included Docker image.
 
 ## Challenges and lessons
 
